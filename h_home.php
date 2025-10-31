@@ -147,6 +147,8 @@ $user = $_SESSION['user'];
           return;
         }
 
+        
+
         $.ajax({
           url: "./habits/add_habit.php", // your backend PHP file
           type: "POST",
