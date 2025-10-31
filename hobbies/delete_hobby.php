@@ -12,17 +12,17 @@ $user_id = $user['id'];
 $id = $_POST['id'] ?? '';
 
 if ($id == '') {
-  echo "Invalid hobby ID!";
+  echo "Invalid habit ID!";
   exit;
 }
 
-$stmt = $conn->prepare("DELETE FROM hobbies WHERE id=? AND user_id=?");
+$stmt = $conn->prepare("DELETE FROM habits WHERE id=? AND user_id=?");
 $stmt->bind_param("ii", $id, $user_id);
 
 if ($stmt->execute()) {
-  echo "🗑️ Hobby deleted successfully!";
+  echo "🗑️ habit deleted successfully!";
 } else {
-  echo "❌ Error deleting hobby!";
+  echo "❌ Error deleting habit!";
 }
 
 $stmt->close();

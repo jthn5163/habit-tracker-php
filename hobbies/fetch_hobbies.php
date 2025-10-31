@@ -11,21 +11,21 @@ if (!isset($_SESSION['user'])) {
 
 $user_id = $_SESSION['user']['id'];
 
-$query = "SELECT * FROM hobbies WHERE user_id = ? ORDER BY id DESC";
+$query = "SELECT * FROM habits WHERE user_id = ? ORDER BY id DESC";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
-$hobbies = [];
+$habits = [];
 while ($row = $result->fetch_assoc()) {
-  $hobbies[] = $row;
+  $habits[] = $row;
 }
 
 echo json_encode([
   "status" => "success",
-  "count" => count($hobbies),
-  "data" => $hobbies
+  "count" => count($habits),
+  "data" => $habits
 ]);
 
 $stmt->close();

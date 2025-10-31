@@ -12,7 +12,7 @@ $user = $_SESSION['user'];
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hobby Tracker</title>
+  <title>habit Tracker</title>
 
   <!-- Bootstrap + Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -70,50 +70,52 @@ $user = $_SESSION['user'];
     </h3>
     <hr>
 
-    <button class="btn btn-custom mb-3" data-bs-toggle="modal" data-bs-target="#hobbyModal">+ Add Hobby</button>
-    <div id="hobbyList" class="table-responsive text-center text-muted">
-      <p>Loading hobbies...</p>
+    <button class="btn btn-custom mb-3" data-bs-toggle="modal" data-bs-target="#habitModal">+ Add habit</button>
+    <div id="habitList" class="table-responsive text-center text-muted">
+      <p>Loading habits...</p>
     </div>
   </div>
 
   <!-- Modal -->
-  <div class="modal fade" id="hobbyModal" tabindex="-1">
+  <div class="modal fade" id="habitModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Add / Edit Hobby</h5>
+          <h5 class="modal-title">Add / Edit habit</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <form id="hobbyForm">
-            <input type="hidden" id="hobby_id">
+          <form id="habitForm">
+            <input type="hidden" id="habit_id">
             <div class="mb-3">
-              <label>Hobby Name</label>
-              <input type="text" id="hobby_name" class="form-control" required>
+              <label>habit Name</label>
+              <input type="text" id="habit_name" class="form-control" required>
             </div>
-            <div class="mb-3">
-              <label>Category</label>
-              <select id="category" class="form-select">
-                <option>Fitness</option>
-                <option>Music</option>
-                <option>Reading</option>
-                <option>Travel</option>
-                <option>Cooking</option>
-              </select>
-            </div>
+
             <div class="mb-3">
               <label>Frequency</label>
               <select id="frequency" class="form-select">
+                <option value="" disabled selected>Select frequency</option> 
                 <option>Daily</option>
                 <option>Weekly</option>
                 <option>Monthly</option>
               </select>
             </div>
+
+            <div class="mb-3">
+              <label>Type</label>
+              <select id="type" class="form-select">
+                <option value="" disabled selected>Select type</option> 
+                <option>Good</option>
+                <option>Bad</option>
+              </select>
+            </div>
+
             <div class="mb-3">
               <label>Notes</label>
               <textarea id="notes" class="form-control"></textarea>
             </div>
-            <button type="submit" class="btn btn-custom w-100">Save Hobby</button>
+            <button type="submit" class="btn btn-custom w-100">Save habit</button>
           </form>
         </div>
       </div>
@@ -123,95 +125,99 @@ $user = $_SESSION['user'];
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
-$(document).ready(function() {
+    $(document).ready(function() {
 
-  // Load hobbies when page opens
-  loadHobbies();
+      // Load habits when page opens
+      loadhabits();
 
-  // Handle Add / Edit form submission via AJAX
-  $("#hobbyForm").on("submit", function(e) {
-    e.preventDefault();
+      // Handle Add / Edit form submission via AJAX
+      $("#habitForm").on("submit", function(e) {
+        e.preventDefault();
 
-    const formData = {
-      id: $("#hobby_id").val(),
-      hobby_name: $("#hobby_name").val().trim(),
-      category: $("#category").val(),
-      frequency: $("#frequency").val(),
-      notes: $("#notes").val().trim()
-    };
+        const formData = {
+          id: $("#habit_id").val(),
+          habit_name: $("#habit_name").val().trim(),
+          frequency: $("#frequency").val(),
+          type: $("#type").val(),
+          notes: $("#notes").val().trim()
+        };
 
-    if (formData.hobby_name === "") {
-      alert("Please enter a hobby name!");
-      return;
-    }
-
-    $.ajax({
-      url: "./hobbies/add_hobby.php", // your backend PHP file
-      type: "POST",
-      data: formData,
-      success: function(response) {
-        alert(response); // ✅ show success or error message
-        $("#hobbyModal").modal("hide");
-        $("#hobbyForm")[0].reset();
-        loadHobbies(); // reload table
-      },
-      error: function() {
-        alert("Error: Could not save hobby!");
-      }
-    });
-  });
-
-  // Edit hobby
-  $(document).on("click", ".editHobby", function() {
-    const id = $(this).data("id");
-    $.ajax({
-      url: "./hobbies/edit_hobby.php",
-      type: "GET",
-      data: { id },
-      dataType: "json",
-      success: function(data) {
-        if (data.status === "success") {
-          const h = data.hobby;
-          $("#hobby_id").val(h.id);
-          $("#hobby_name").val(h.hobby_name);
-          $("#category").val(h.category);
-          $("#frequency").val(h.frequency);
-          $("#notes").val(h.notes);
-          $("#hobbyModal").modal("show");
-        } else {
-          alert("Hobby not found!");
+        if (formData.habit_name === "") {
+          alert("Please enter a habit name!");
+          return;
         }
-      }
-    });
-  });
 
-  // Delete hobby
-  $(document).on("click", ".deleteHobby", function() {
-    const id = $(this).data("id");
-    if (confirm("Are you sure you want to delete this hobby?")) {
-      $.ajax({
-        url: "./hobbies/delete_hobby.php",
-        type: "POST",
-        data: { id },
-        success: function(response) {
-          alert(response);
-          loadHobbies();
-        },
-        error: function() {
-          alert("Error deleting hobby!");
+        $.ajax({
+          url: "./habits/add_habit.php", // your backend PHP file
+          type: "POST",
+          data: formData,
+          success: function(response) {
+            alert(response); // ✅ show success or error message
+            $("#habitModal").modal("hide");
+            $("#habitForm")[0].reset();
+            loadhabits(); // reload table
+          },
+          error: function() {
+            alert("Error: Could not save habit!");
+          }
+        });
+      });
+
+      // Edit habit
+      $(document).on("click", ".edithabit", function() {
+        const id = $(this).data("id");
+        $.ajax({
+          url: "./habits/edit_habit.php",
+          type: "GET",
+          data: {
+            id
+          },
+          dataType: "json",
+          success: function(data) {
+            if (data.status === "success") {
+              const h = data.habit;
+              $("#habit_id").val(h.id);
+              $("#habit_name").val(h.habit_name);
+              $("#category").val(h.category);
+              $("#frequency").val(h.frequency);
+              $("#notes").val(h.notes);
+              $("#habitModal").modal("show");
+            } else {
+              alert("habit not found!");
+            }
+          }
+        });
+      });
+
+      // Delete habit
+      $(document).on("click", ".deletehabit", function() {
+        const id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this habit?")) {
+          $.ajax({
+            url: "./habits/delete_habit.php",
+            type: "POST",
+            data: {
+              id
+            },
+            success: function(response) {
+              alert(response);
+              loadhabits();
+            },
+            error: function() {
+              alert("Error deleting habit!");
+            }
+          });
         }
       });
-    }
-  });
 
-});
-</script>
+    });
+  </script>
 
 
   <script>
-    function loadHobbies() {
+    function loadhabits() {
       $.ajax({
-        url: './hobbies/fetch_hobbies.php',
+        url: './habits/fetch_habits.php',
         method: 'GET',
         dataType: 'json',
         success: function(response) {
@@ -224,7 +230,7 @@ $(document).ready(function() {
           <table class="table table-bordered table-hover align-middle">
             <thead class="table-light">
               <tr>
-                <th>Hobby</th>
+                <th>habit</th>
                 <th>Category</th>
                 <th>Frequency</th>
                 <th>Progress</th>
@@ -235,24 +241,24 @@ $(document).ready(function() {
             <tbody>
         `;
 
-            response.data.forEach(hobby => {
+            response.data.forEach(habit => {
               tableHTML += `
             <tr>
-              <td>${hobby.hobby_name}</td>
-              <td>${hobby.category}</td>
-              <td>${hobby.frequency}</td>
+              <td>${habit.habit_name}</td>
+              <td>${habit.category}</td>
+              <td>${habit.frequency}</td>
               <td>
                 <div class='progress'>
-                  <div class='progress-bar bg-success' style='width: ${hobby.progress}%'></div>
+                  <div class='progress-bar bg-success' style='width: ${habit.progress}%'></div>
                 </div>
-                <small>${hobby.progress}%</small>
+                <small>${habit.progress}%</small>
               </td>
-              <td>${hobby.notes || ''}</td>
+              <td>${habit.notes || ''}</td>
               <td>
-                <button class='btn btn-sm btn-light editHobby' data-id='${hobby.id}' title='Edit'>
+                <button class='btn btn-sm btn-light edithabit' data-id='${habit.id}' title='Edit'>
                   <i class='bi bi-pencil-square text-primary'></i>
                 </button>
-                <button class='btn btn-sm btn-light deleteHobby' data-id='${hobby.id}' title='Delete'>
+                <button class='btn btn-sm btn-light deletehabit' data-id='${habit.id}' title='Delete'>
                   <i class='bi bi-trash text-danger'></i>
                 </button>
               </td>
@@ -260,13 +266,13 @@ $(document).ready(function() {
             });
 
             tableHTML += '</tbody></table>';
-            $('#hobbyList').html(tableHTML);
+            $('#habitList').html(tableHTML);
           } else {
-            $('#hobbyList').html("<p class='text-muted'>No hobbies added yet. Start by adding one!</p>");
+            $('#habitList').html("<p class='text-muted'>No habits added yet. Start by adding one!</p>");
           }
         },
         error: function() {
-          $('#hobbyList').html('<p class="text-danger">Failed to load hobbies.</p>');
+          $('#habitList').html('<p class="text-danger">Failed to load habits.</p>');
         }
       });
     }

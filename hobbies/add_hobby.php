@@ -10,37 +10,37 @@ if (!isset($_SESSION['user'])) {
 $user = $_SESSION['user'];
 $user_id = $user['id'];
 
-$hobby_id = $_POST['id'] ?? '';
-$hobby_name = trim($_POST['hobby_name'] ?? '');
+$habit_id = $_POST['id'] ?? '';
+$habit_name = trim($_POST['habit_name'] ?? '');
 $category = trim($_POST['category'] ?? '');
 $frequency = trim($_POST['frequency'] ?? '');
 $notes = trim($_POST['notes'] ?? '');
 
-if ($hobby_name == '') {
-  echo "Hobby name is required!";
+if ($habit_name == '') {
+  echo "habit name is required!";
   exit;
 }
 
-if ($hobby_id == '') {
-  // Insert new hobby
-  $stmt = $conn->prepare("INSERT INTO hobbies (user_id, hobby_name, category, frequency, notes) VALUES (?, ?, ?, ?, ?)");
-  $stmt->bind_param("issss", $user_id, $hobby_name, $category, $frequency, $notes);
+if ($habit_id == '') {
+  // Insert new habit
+  $stmt = $conn->prepare("INSERT INTO habits (user_id, habit_name, category, frequency, notes) VALUES (?, ?, ?, ?, ?)");
+  $stmt->bind_param("issss", $user_id, $habit_name, $category, $frequency, $notes);
 
   if ($stmt->execute()) {
-    echo "✅ Hobby added successfully!";
+    echo "✅ habit added successfully!";
   } else {
-    echo "❌ Error adding hobby!";
+    echo "❌ Error adding habit!";
   }
   $stmt->close();
 } else {
-  // Update existing hobby
-  $stmt = $conn->prepare("UPDATE hobbies SET hobby_name=?, category=?, frequency=?, notes=? WHERE id=? AND user_id=?");
-  $stmt->bind_param("ssssii", $hobby_name, $category, $frequency, $notes, $hobby_id, $user_id);
+  // Update existing habit
+  $stmt = $conn->prepare("UPDATE habits SET habit_name=?, category=?, frequency=?, notes=? WHERE id=? AND user_id=?");
+  $stmt->bind_param("ssssii", $habit_name, $category, $frequency, $notes, $habit_id, $user_id);
 
   if ($stmt->execute()) {
-    echo "✅ Hobby updated successfully!";
+    echo "✅ habit updated successfully!";
   } else {
-    echo "❌ Error updating hobby!";
+    echo "❌ Error updating habit!";
   }
   $stmt->close();
 }
