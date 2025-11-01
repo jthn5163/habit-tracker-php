@@ -562,6 +562,49 @@ $user = $_SESSION['user'];
         justify-content: center;
       }
     }
+
+    /* Icon Button Style */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: all 0.3s;
+      font-size: 1.3rem;
+    }
+
+    .reports-icon {
+      background: linear-gradient(135deg, #28a745 0%, #4CAF50 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .reports-icon:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
+      color: white;
+    }
+
+    .logout-icon {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+    }
+
+    .logout-icon:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
+      color: white;
+    }
   </style>
 </head>
 
@@ -574,26 +617,39 @@ $user = $_SESSION['user'];
       <div class="date-section">
         <i class="bi bi-calendar-event date-icon"></i>
         <div class="date-text">
-          
+
           <span class="date-value" id="currentDate">Loading...</span>
         </div>
       </div>
       <div class="clock-section">
         <i class="bi bi-clock clock-icon"></i>
         <div class="clock-text">
-          
+
           <span class="clock-value" id="currentTime">Loading...</span>
         </div>
       </div>
     </div>
 
 
-    <div class="header-section">
+    <!-- <div class="header-section">
       <h3 class="welcome-text">🎯 Welcome, <?= htmlspecialchars($user['name']); ?></h3>
       <a href="logout.php" class="logout-btn" title="Logout">
         <i class="bi bi-box-arrow-right"></i>
       </a>
+    </div> -->
+
+    <div class="header-section">
+      <h3 class="welcome-text">🎯<?= htmlspecialchars($user['name']); ?></h3>
+      <div class="header-actions">
+        <a href="h_reports.php" class="icon-btn reports-icon" title="View Reports & Analytics">
+          <i class="bi bi-graph-up-arrow"></i>
+        </a>
+        <a href="logout.php" class="icon-btn logout-icon" title="Logout">
+          <i class="bi bi-box-arrow-right"></i>
+        </a>
+      </div>
     </div>
+
 
     <button class="btn btn-custom mb-4" data-bs-toggle="modal" data-bs-target="#habitModal">
       <i class="bi bi-plus-circle"></i> Add New Habit
@@ -625,7 +681,7 @@ $user = $_SESSION['user'];
               <label class="form-label">Habit Name *</label>
               <input type="text" id="habit_name" class="form-control" placeholder="e.g., Morning Exercise" required>
             </div>
-<!-- 
+            <!-- 
             <div class="mb-3">
               <label class="form-label">Frequency *</label>
               <select id="frequency" class="form-select" required>
@@ -776,140 +832,144 @@ $user = $_SESSION['user'];
 
 
   <script>
-  $(document).ready(function() {
-    // ========================================
-    // DATE AND CLOCK FUNCTIONALITY
-    // ========================================
+    $(document).ready(function() {
+      // ========================================
+      // DATE AND CLOCK FUNCTIONALITY
+      // ========================================
 
-    function updateDateTime() {
-      const now = new Date();
+      function updateDateTime() {
+        const now = new Date();
 
-      const dateOptions = {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: '2-digit'
-      };
-      const formattedDate = now.toLocaleDateString('en-IN', dateOptions);
+        const dateOptions = {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: '2-digit'
+        };
+        const formattedDate = now.toLocaleDateString('en-IN', dateOptions);
 
-      const timeOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-        timeZone: 'Asia/Kolkata'
-      };
-      const formattedTime = now.toLocaleTimeString('en-IN', timeOptions);
+        const timeOptions = {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+          timeZone: 'Asia/Kolkata'
+        };
+        const formattedTime = now.toLocaleTimeString('en-IN', timeOptions);
 
-      $('#currentDate').text(formattedDate);
-      $('#currentTime').text(formattedTime);
-    }
-
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
-
-    loadHabits();
-
-    // Reset form when modal closes
-    $('#habitModal').on('hidden.bs.modal', function() {
-      $("#habitForm")[0].reset();
-      $("#habit_id").val('');
-      $("#modalTitle").text('Add New Habit');
-    });
-
-    // Save or update habit
-    $("#habitForm").on("submit", function(e) {
-      e.preventDefault();
-
-      const formData = {
-        id: $("#habit_id").val(),
-        habit_name: $("#habit_name").val().trim(),
-        type: $("#type").val(),
-        notes: $("#notes").val().trim()
-      };
-
-      if (!formData.habit_name || !formData.type) {
-        alert("Please fill all required fields!");
-        return;
+        $('#currentDate').text(formattedDate);
+        $('#currentTime').text(formattedTime);
       }
 
-      $.ajax({
-        url: "./habits/add_habit.php",
-        type: "POST",
-        data: formData,
-        success: function(response) {
-          alert(response);
-          $("#habitModal").modal("hide");
-          loadHabits();
-        },
-        error: function() {
-          alert("Error: Could not save habit!");
-        }
-      });
-    });
+      updateDateTime();
+      setInterval(updateDateTime, 1000);
 
-    // Edit habit
-    $(document).on("click", ".edithabit", function() {
-      const id = $(this).data("id");
-      $.ajax({
-        url: "./habits/edit_habit.php",
-        type: "GET",
-        data: { id },
-        dataType: "json",
-        success: function(data) {
-          if (data.status === "success") {
-            const h = data.habit;
-            $("#habit_id").val(h.id);
-            $("#habit_name").val(h.habit_name);
-            $("#type").val(h.type);
-            $("#notes").val(h.notes);
-            $("#modalTitle").text('Edit Habit');
-            $("#habitModal").modal("show");
-          } else {
-            alert("Habit not found!");
-          }
-        }
-      });
-    });
+      loadHabits();
 
-    // Delete habit
-    $(document).on("click", ".deletehabit", function() {
-      const id = $(this).data("id");
-      if (confirm("Are you sure you want to delete this habit?")) {
+      // Reset form when modal closes
+      $('#habitModal').on('hidden.bs.modal', function() {
+        $("#habitForm")[0].reset();
+        $("#habit_id").val('');
+        $("#modalTitle").text('Add New Habit');
+      });
+
+      // Save or update habit
+      $("#habitForm").on("submit", function(e) {
+        e.preventDefault();
+
+        const formData = {
+          id: $("#habit_id").val(),
+          habit_name: $("#habit_name").val().trim(),
+          type: $("#type").val(),
+          notes: $("#notes").val().trim()
+        };
+
+        if (!formData.habit_name || !formData.type) {
+          alert("Please fill all required fields!");
+          return;
+        }
+
         $.ajax({
-          url: "./habits/delete_habit.php",
+          url: "./habits/add_habit.php",
           type: "POST",
-          data: { id },
+          data: formData,
           success: function(response) {
             alert(response);
+            $("#habitModal").modal("hide");
             loadHabits();
           },
           error: function() {
-            alert("Error deleting habit!");
+            alert("Error: Could not save habit!");
           }
         });
-      }
-    });
+      });
 
-    // ========================================
-    // LOAD HABITS - DAILY ONLY (SIMPLIFIED)
-    // ========================================
-    
-    function loadHabits() {
-      $.ajax({
-        url: './habits/fetch_habits.php',
-        method: 'GET',
-        dataType: 'json',
-        success: function(response) {
-          if (response.status === "success" && response.count > 0) {
-            let habitCards = '';
-            
-            // Create habit cards directly (no frequency grouping needed)
-            response.data.forEach(habit => {
-              habitCards += createHabitCard(habit);
-            });
+      // Edit habit
+      $(document).on("click", ".edithabit", function() {
+        const id = $(this).data("id");
+        $.ajax({
+          url: "./habits/edit_habit.php",
+          type: "GET",
+          data: {
+            id
+          },
+          dataType: "json",
+          success: function(data) {
+            if (data.status === "success") {
+              const h = data.habit;
+              $("#habit_id").val(h.id);
+              $("#habit_name").val(h.habit_name);
+              $("#type").val(h.type);
+              $("#notes").val(h.notes);
+              $("#modalTitle").text('Edit Habit');
+              $("#habitModal").modal("show");
+            } else {
+              alert("Habit not found!");
+            }
+          }
+        });
+      });
 
-            $('#habitContainers').html(`
+      // Delete habit
+      $(document).on("click", ".deletehabit", function() {
+        const id = $(this).data("id");
+        if (confirm("Are you sure you want to delete this habit?")) {
+          $.ajax({
+            url: "./habits/delete_habit.php",
+            type: "POST",
+            data: {
+              id
+            },
+            success: function(response) {
+              alert(response);
+              loadHabits();
+            },
+            error: function() {
+              alert("Error deleting habit!");
+            }
+          });
+        }
+      });
+
+      // ========================================
+      // LOAD HABITS - DAILY ONLY (SIMPLIFIED)
+      // ========================================
+
+      function loadHabits() {
+        $.ajax({
+          url: './habits/fetch_habits.php',
+          method: 'GET',
+          dataType: 'json',
+          success: function(response) {
+            if (response.status === "success" && response.count > 0) {
+              let habitCards = '';
+
+              // Create habit cards directly (no frequency grouping needed)
+              response.data.forEach(habit => {
+                habitCards += createHabitCard(habit);
+              });
+
+              $('#habitContainers').html(`
               <div class="frequency-section">
                 <div class="frequency-header daily">
                   <div class="frequency-icon daily">
@@ -925,27 +985,27 @@ $user = $_SESSION['user'];
                 </div>
               </div>
             `);
-          } else {
-            $('#habitContainers').html(`
+            } else {
+              $('#habitContainers').html(`
               <div class="empty-state">
                 <i class="bi bi-clipboard-check"></i>
                 <h4>No habits yet!</h4>
                 <p>Start building better daily habits by adding your first one.</p>
               </div>
             `);
+            }
+          },
+          error: function() {
+            $('#habitContainers').html('<p class="text-danger text-center">Failed to load habits.</p>');
           }
-        },
-        error: function() {
-          $('#habitContainers').html('<p class="text-danger text-center">Failed to load habits.</p>');
-        }
-      });
-    }
+        });
+      }
 
-    function createHabitCard(habit) {
-      const typeClass = habit.type === "Good" ? "good" : "bad";
-      const progressColor = habit.type === "Good" ? "bg-success" : "bg-danger";
+      function createHabitCard(habit) {
+        const typeClass = habit.type === "Good" ? "good" : "bad";
+        const progressColor = habit.type === "Good" ? "bg-success" : "bg-danger";
 
-      return `
+        return `
         <div class="habit-card ${typeClass}">
           <div class="row align-items-center g-2">
             <div class="col-md-5">
@@ -975,323 +1035,323 @@ $user = $_SESSION['user'];
           </div>
         </div>
       `;
-    }
-
-    // ========================================
-    // POMODORO TIMER WITH MINI MODAL (BACKGROUND-SAFE)
-    // ========================================
-
-    let pomodoroInterval = null;
-    let selectedMinutes = 25;
-    let remainingTime = selectedMinutes * 60;
-    let activeHabitId = null;
-    let activeHabitName = null;
-    let isPaused = false;
-    let startTimestamp = null;
-    let pausedTime = null;
-
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    function updateTimerDisplay() {
-      const timeStr = formatTime(remainingTime);
-      $("#pomodoroTimer").text(timeStr);
-      $("#miniTimer").text(timeStr);
-    }
-
-    function showMiniPomodoro() {
-      $("#miniPomodoro").fadeIn(300);
-      $("#miniHabitName").text(activeHabitName);
-      updateTimerDisplay();
-
-      if (isPaused) {
-        $("#miniPomodoro").addClass("paused");
-        $("#miniTimer").removeClass("active");
-        $("#miniPause").html('<i class="bi bi-play-fill"></i> Resume');
-      } else {
-        $("#miniPomodoro").removeClass("paused");
-        $("#miniTimer").addClass("active");
-        $("#miniPause").html('<i class="bi bi-pause-fill"></i> Pause');
       }
-    }
 
-    function hideMiniPomodoro() {
-      $("#miniPomodoro").fadeOut(300);
-    }
+      // ========================================
+      // POMODORO TIMER WITH MINI MODAL (BACKGROUND-SAFE)
+      // ========================================
 
-    $(document).on("click", ".time-select", function() {
-      if (!pomodoroInterval && !isPaused) {
-        $(".time-select").removeClass("active");
-        $(this).addClass("active");
-        selectedMinutes = parseInt($(this).data("time"));
-        remainingTime = selectedMinutes * 60;
+      let pomodoroInterval = null;
+      let selectedMinutes = 25;
+      let remainingTime = selectedMinutes * 60;
+      let activeHabitId = null;
+      let activeHabitName = null;
+      let isPaused = false;
+      let startTimestamp = null;
+      let pausedTime = null;
+
+      function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+
+      function updateTimerDisplay() {
+        const timeStr = formatTime(remainingTime);
+        $("#pomodoroTimer").text(timeStr);
+        $("#miniTimer").text(timeStr);
+      }
+
+      function showMiniPomodoro() {
+        $("#miniPomodoro").fadeIn(300);
+        $("#miniHabitName").text(activeHabitName);
         updateTimerDisplay();
+
+        if (isPaused) {
+          $("#miniPomodoro").addClass("paused");
+          $("#miniTimer").removeClass("active");
+          $("#miniPause").html('<i class="bi bi-play-fill"></i> Resume');
+        } else {
+          $("#miniPomodoro").removeClass("paused");
+          $("#miniTimer").addClass("active");
+          $("#miniPause").html('<i class="bi bi-pause-fill"></i> Pause');
+        }
       }
-    });
 
-    function pomodoroTimerLoop() {
-      if (isPaused || !startTimestamp) return;
+      function hideMiniPomodoro() {
+        $("#miniPomodoro").fadeOut(300);
+      }
 
-      const now = Date.now();
-      const elapsedSeconds = Math.floor((now - startTimestamp) / 1000);
-      const totalSeconds = selectedMinutes * 60;
-      remainingTime = totalSeconds - elapsedSeconds;
+      $(document).on("click", ".time-select", function() {
+        if (!pomodoroInterval && !isPaused) {
+          $(".time-select").removeClass("active");
+          $(this).addClass("active");
+          selectedMinutes = parseInt($(this).data("time"));
+          remainingTime = selectedMinutes * 60;
+          updateTimerDisplay();
+        }
+      });
 
-      updateTimerDisplay();
+      function pomodoroTimerLoop() {
+        if (isPaused || !startTimestamp) return;
 
-      if (remainingTime <= 0) {
-        remainingTime = 0;
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - startTimestamp) / 1000);
+        const totalSeconds = selectedMinutes * 60;
+        remainingTime = totalSeconds - elapsedSeconds;
+
         updateTimerDisplay();
-        finishPomodoro();
-        return;
+
+        if (remainingTime <= 0) {
+          remainingTime = 0;
+          updateTimerDisplay();
+          finishPomodoro();
+          return;
+        }
+
+        pomodoroInterval = requestAnimationFrame(pomodoroTimerLoop);
       }
 
-      pomodoroInterval = requestAnimationFrame(pomodoroTimerLoop);
-    }
-
-    function startPomodoroTimer() {
-      $("#pomodoroSetup").hide();
-      $("#startPomodoro").addClass("d-none");
-      $("#pausePomodoro").removeClass("d-none").html('<i class="bi bi-pause-fill"></i> Pause');
-      $("#stopPomodoro").removeClass("d-none");
-      $("#pomodoroStatus").text("⏱️ Focus time! Stay concentrated...");
-      $("#pomodoroTimer").addClass("pomodoro-active");
-
-      isPaused = false;
-      startTimestamp = Date.now();
-      pomodoroTimerLoop();
-    }
-
-    function pauseResumePomodoro() {
-      if (!isPaused) {
-        cancelAnimationFrame(pomodoroInterval);
-        pomodoroInterval = null;
-        isPaused = true;
-        pausedTime = remainingTime;
-
-        $("#pausePomodoro").html('<i class="bi bi-play-fill"></i> Resume');
-        $("#pomodoroStatus").text("⏸️ Timer paused");
-        $("#pomodoroTimer").removeClass("pomodoro-active");
-
-        $("#miniPomodoro").addClass("paused");
-        $("#miniTimer").removeClass("active");
-        $("#miniPause").html('<i class="bi bi-play-fill"></i> Resume');
-      } else {
-        isPaused = false;
-
-        $("#pausePomodoro").html('<i class="bi bi-pause-fill"></i> Pause');
+      function startPomodoroTimer() {
+        $("#pomodoroSetup").hide();
+        $("#startPomodoro").addClass("d-none");
+        $("#pausePomodoro").removeClass("d-none").html('<i class="bi bi-pause-fill"></i> Pause');
+        $("#stopPomodoro").removeClass("d-none");
         $("#pomodoroStatus").text("⏱️ Focus time! Stay concentrated...");
         $("#pomodoroTimer").addClass("pomodoro-active");
 
-        $("#miniPomodoro").removeClass("paused");
-        $("#miniTimer").addClass("active");
-        $("#miniPause").html('<i class="bi bi-pause-fill"></i> Pause');
-
-        selectedMinutes = pausedTime / 60;
+        isPaused = false;
         startTimestamp = Date.now();
         pomodoroTimerLoop();
       }
-    }
 
-    function stopPomodoroTimer() {
-      cancelAnimationFrame(pomodoroInterval);
-      pomodoroInterval = null;
-      isPaused = false;
-      startTimestamp = null;
-      pausedTime = null;
+      function pauseResumePomodoro() {
+        if (!isPaused) {
+          cancelAnimationFrame(pomodoroInterval);
+          pomodoroInterval = null;
+          isPaused = true;
+          pausedTime = remainingTime;
 
-      $("#pomodoroSetup").show();
-      $("#startPomodoro").removeClass("d-none");
-      $("#pausePomodoro").addClass("d-none");
-      $("#stopPomodoro").addClass("d-none");
-      $("#pomodoroStatus").text("❌ Timer stopped");
-      $("#pomodoroTimer").removeClass("pomodoro-active");
+          $("#pausePomodoro").html('<i class="bi bi-play-fill"></i> Resume');
+          $("#pomodoroStatus").text("⏸️ Timer paused");
+          $("#pomodoroTimer").removeClass("pomodoro-active");
 
-      remainingTime = selectedMinutes * 60;
-      updateTimerDisplay();
-      hideMiniPomodoro();
-    }
+          $("#miniPomodoro").addClass("paused");
+          $("#miniTimer").removeClass("active");
+          $("#miniPause").html('<i class="bi bi-play-fill"></i> Resume');
+        } else {
+          isPaused = false;
 
-    function finishPomodoro() {
-      cancelAnimationFrame(pomodoroInterval);
-      pomodoroInterval = null;
-      isPaused = false;
-      startTimestamp = null;
-      pausedTime = null;
-      remainingTime = 0;
+          $("#pausePomodoro").html('<i class="bi bi-pause-fill"></i> Pause');
+          $("#pomodoroStatus").text("⏱️ Focus time! Stay concentrated...");
+          $("#pomodoroTimer").addClass("pomodoro-active");
 
-      $("#pomodoroTimer").text("00:00").removeClass("pomodoro-active");
-      $("#pomodoroStatus").text("🎉 Pomodoro complete! Updating progress...");
-      $("#startPomodoro").addClass("d-none");
-      $("#pausePomodoro").addClass("d-none");
-      $("#stopPomodoro").addClass("d-none");
+          $("#miniPomodoro").removeClass("paused");
+          $("#miniTimer").addClass("active");
+          $("#miniPause").html('<i class="bi bi-pause-fill"></i> Pause');
 
-      hideMiniPomodoro();
-
-      console.log("Finishing Pomodoro for habit ID:", activeHabitId);
-
-      $.ajax({
-        url: "./habits/update_progress.php",
-        type: "POST",
-        data: {
-          id: activeHabitId,
-          action: 'increment'
-        },
-        dataType: "json",
-        success: function(response) {
-          console.log("Progress update response:", response);
-          if (response.status === "success") {
-            loadHabits();
-            $("#pomodoroStatus").text("✅ Progress updated! Great work!");
-
-            setTimeout(() => {
-              $("#pomodoroModal").modal("hide");
-            }, 2000);
-          } else {
-            $("#pomodoroStatus").text("⚠️ " + response.message);
-          }
-        },
-        error: function(xhr, status, error) {
-          console.error("Progress update error:", error);
-          console.error("Response:", xhr.responseText);
-          $("#pomodoroStatus").text("❌ Error updating progress!");
+          selectedMinutes = pausedTime / 60;
+          startTimestamp = Date.now();
+          pomodoroTimerLoop();
         }
-      });
-    }
+      }
 
-    $(document).on("click", ".progress-container", function() {
-      activeHabitId = $(this).data("id");
-      activeHabitName = $(this).data("name");
-      const habitType = $(this).data("type");
-
-      console.log("Opening modal for habit:", activeHabitId, activeHabitName, habitType);
-
-      if (habitType === "Good") {
-        selectedMinutes = 25;
-        remainingTime = selectedMinutes * 60;
+      function stopPomodoroTimer() {
+        cancelAnimationFrame(pomodoroInterval);
+        pomodoroInterval = null;
+        isPaused = false;
         startTimestamp = null;
         pausedTime = null;
-        $(".time-select").removeClass("active");
-        $(".time-select[data-time='25']").addClass("active");
 
-        $("#pomodoroHabitName").text(activeHabitName);
-        updateTimerDisplay();
-        $("#pomodoroTimer").removeClass("pomodoro-active");
-        $("#pomodoroStatus").text("Select time and click Start");
         $("#pomodoroSetup").show();
         $("#startPomodoro").removeClass("d-none");
         $("#pausePomodoro").addClass("d-none");
         $("#stopPomodoro").addClass("d-none");
-        $("#pomodoroModal").modal("show");
-      } else {
-        $("#breakHabitName").text(activeHabitName);
-        $("#breakStreakModal").modal("show");
-      }
-    });
+        $("#pomodoroStatus").text("❌ Timer stopped");
+        $("#pomodoroTimer").removeClass("pomodoro-active");
 
-    $("#startPomodoro").on("click", startPomodoroTimer);
-    $("#pausePomodoro").on("click", pauseResumePomodoro);
-    $("#stopPomodoro").on("click", stopPomodoroTimer);
-
-    $("#miniPause").on("click", pauseResumePomodoro);
-    $("#miniStop").on("click", stopPomodoroTimer);
-
-    $("#miniPomodoro").on("click", function(e) {
-      if ($(e.target).closest('.mini-btn, .mini-pomodoro-close').length === 0) {
-        $("#pomodoroModal").modal("show");
-      }
-    });
-
-    $("#closeMiniPomodoro").on("click", function(e) {
-      e.stopPropagation();
-      if (confirm("Do you want to stop the Pomodoro timer?")) {
-        stopPomodoroTimer();
-      }
-    });
-
-    $("#pomodoroModal").on("hidden.bs.modal", function() {
-      if (pomodoroInterval || isPaused) {
-        showMiniPomodoro();
-      } else {
-        selectedMinutes = 25;
         remainingTime = selectedMinutes * 60;
+        updateTimerDisplay();
+        hideMiniPomodoro();
+      }
+
+      function finishPomodoro() {
+        cancelAnimationFrame(pomodoroInterval);
+        pomodoroInterval = null;
         isPaused = false;
         startTimestamp = null;
         pausedTime = null;
+        remainingTime = 0;
+
+        $("#pomodoroTimer").text("00:00").removeClass("pomodoro-active");
+        $("#pomodoroStatus").text("🎉 Pomodoro complete! Updating progress...");
+        $("#startPomodoro").addClass("d-none");
+        $("#pausePomodoro").addClass("d-none");
+        $("#stopPomodoro").addClass("d-none");
+
         hideMiniPomodoro();
+
+        console.log("Finishing Pomodoro for habit ID:", activeHabitId);
+
+        $.ajax({
+          url: "./habits/update_progress.php",
+          type: "POST",
+          data: {
+            id: activeHabitId,
+            action: 'increment'
+          },
+          dataType: "json",
+          success: function(response) {
+            console.log("Progress update response:", response);
+            if (response.status === "success") {
+              loadHabits();
+              $("#pomodoroStatus").text("✅ Progress updated! Great work!");
+
+              setTimeout(() => {
+                $("#pomodoroModal").modal("hide");
+              }, 2000);
+            } else {
+              $("#pomodoroStatus").text("⚠️ " + response.message);
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Progress update error:", error);
+            console.error("Response:", xhr.responseText);
+            $("#pomodoroStatus").text("❌ Error updating progress!");
+          }
+        });
       }
-    });
 
-    $("#pomodoroModal").on("shown.bs.modal", function() {
-      hideMiniPomodoro();
-    });
+      $(document).on("click", ".progress-container", function() {
+        activeHabitId = $(this).data("id");
+        activeHabitName = $(this).data("name");
+        const habitType = $(this).data("type");
 
-    // ========================================
-    // BAD HABIT TRACKING
-    // ========================================
+        console.log("Opening modal for habit:", activeHabitId, activeHabitName, habitType);
 
-    $("#confirmResisted").on("click", function() {
-      console.log("Resisted clicked for habit ID:", activeHabitId);
+        if (habitType === "Good") {
+          selectedMinutes = 25;
+          remainingTime = selectedMinutes * 60;
+          startTimestamp = null;
+          pausedTime = null;
+          $(".time-select").removeClass("active");
+          $(".time-select[data-time='25']").addClass("active");
 
-      $.ajax({
-        url: "./habits/update_progress.php",
-        type: "POST",
-        data: {
-          id: activeHabitId,
-          action: 'increment'
-        },
-        dataType: "json",
-        success: function(response) {
-          console.log("Resisted response:", response);
-          if (response.status === "success") {
-            loadHabits();
-            alert("✅ Great job resisting! Keep it up! 💪");
-            $("#breakStreakModal").modal("hide");
-          } else {
-            alert("⚠️ " + response.message);
-          }
-        },
-        error: function(xhr, status, error) {
-          console.error("Resisted error:", error);
-          console.error("Response:", xhr.responseText);
-          alert("❌ Error updating progress!");
+          $("#pomodoroHabitName").text(activeHabitName);
+          updateTimerDisplay();
+          $("#pomodoroTimer").removeClass("pomodoro-active");
+          $("#pomodoroStatus").text("Select time and click Start");
+          $("#pomodoroSetup").show();
+          $("#startPomodoro").removeClass("d-none");
+          $("#pausePomodoro").addClass("d-none");
+          $("#stopPomodoro").addClass("d-none");
+          $("#pomodoroModal").modal("show");
+        } else {
+          $("#breakHabitName").text(activeHabitName);
+          $("#breakStreakModal").modal("show");
         }
       });
-    });
 
-    $("#confirmFailed").on("click", function() {
-      console.log("Failed clicked for habit ID:", activeHabitId);
+      $("#startPomodoro").on("click", startPomodoroTimer);
+      $("#pausePomodoro").on("click", pauseResumePomodoro);
+      $("#stopPomodoro").on("click", stopPomodoroTimer);
 
-      $.ajax({
-        url: "./habits/update_progress.php",
-        type: "POST",
-        data: {
-          id: activeHabitId,
-          action: 'decrement'
-        },
-        dataType: "json",
-        success: function(response) {
-          console.log("Failed response:", response);
-          if (response.status === "success") {
-            loadHabits();
-            alert("😔 Don't give up! Tomorrow is a new chance!");
-            $("#breakStreakModal").modal("hide");
-          } else {
-            alert("⚠️ " + response.message);
-          }
-        },
-        error: function(xhr, status, error) {
-          console.error("Failed error:", error);
-          console.error("Response:", xhr.responseText);
-          alert("❌ Error updating progress!");
+      $("#miniPause").on("click", pauseResumePomodoro);
+      $("#miniStop").on("click", stopPomodoroTimer);
+
+      $("#miniPomodoro").on("click", function(e) {
+        if ($(e.target).closest('.mini-btn, .mini-pomodoro-close').length === 0) {
+          $("#pomodoroModal").modal("show");
         }
       });
+
+      $("#closeMiniPomodoro").on("click", function(e) {
+        e.stopPropagation();
+        if (confirm("Do you want to stop the Pomodoro timer?")) {
+          stopPomodoroTimer();
+        }
+      });
+
+      $("#pomodoroModal").on("hidden.bs.modal", function() {
+        if (pomodoroInterval || isPaused) {
+          showMiniPomodoro();
+        } else {
+          selectedMinutes = 25;
+          remainingTime = selectedMinutes * 60;
+          isPaused = false;
+          startTimestamp = null;
+          pausedTime = null;
+          hideMiniPomodoro();
+        }
+      });
+
+      $("#pomodoroModal").on("shown.bs.modal", function() {
+        hideMiniPomodoro();
+      });
+
+      // ========================================
+      // BAD HABIT TRACKING
+      // ========================================
+
+      $("#confirmResisted").on("click", function() {
+        console.log("Resisted clicked for habit ID:", activeHabitId);
+
+        $.ajax({
+          url: "./habits/update_progress.php",
+          type: "POST",
+          data: {
+            id: activeHabitId,
+            action: 'increment'
+          },
+          dataType: "json",
+          success: function(response) {
+            console.log("Resisted response:", response);
+            if (response.status === "success") {
+              loadHabits();
+              alert("✅ Great job resisting! Keep it up! 💪");
+              $("#breakStreakModal").modal("hide");
+            } else {
+              alert("⚠️ " + response.message);
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Resisted error:", error);
+            console.error("Response:", xhr.responseText);
+            alert("❌ Error updating progress!");
+          }
+        });
+      });
+
+      $("#confirmFailed").on("click", function() {
+        console.log("Failed clicked for habit ID:", activeHabitId);
+
+        $.ajax({
+          url: "./habits/update_progress.php",
+          type: "POST",
+          data: {
+            id: activeHabitId,
+            action: 'decrement'
+          },
+          dataType: "json",
+          success: function(response) {
+            console.log("Failed response:", response);
+            if (response.status === "success") {
+              loadHabits();
+              alert("😔 Don't give up! Tomorrow is a new chance!");
+              $("#breakStreakModal").modal("hide");
+            } else {
+              alert("⚠️ " + response.message);
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("Failed error:", error);
+            console.error("Response:", xhr.responseText);
+            alert("❌ Error updating progress!");
+          }
+        });
+      });
     });
-  });
-</script>
+  </script>
 
 
 
