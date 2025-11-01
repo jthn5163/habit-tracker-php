@@ -12,7 +12,6 @@ $user_id = $user['id'];
 
 $id = $_POST['id'] ?? '';
 $action = $_POST['action'] ?? 'increment';
-$duration = isset($_POST['duration']) ? intval($_POST['duration']) : 25; // Get actual duration from frontend
 
 if ($id == '') {
   echo json_encode(["status" => "error", "message" => "Invalid habit ID"]);
@@ -20,7 +19,7 @@ if ($id == '') {
 }
 
 // Fetch habit details
-$stmt = $conn->prepare("SELECT habit_name, type, progress FROM habits WHERE id=? AND user_id=?");
+$stmt = $conn->prepare("SELECT habit_name, type, frequency, progress FROM habits WHERE id=? AND user_id=?");
 $stmt->bind_param("ii", $id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -33,7 +32,11 @@ if (!$habit) {
 
 $habit_name = $habit['habit_name'];
 $habit_type = $habit['type'];
+$frequency = $habit['frequency'];
 $current_progress = floatval($habit['progress']);
+
+// Calculate increment - DAILY HABITS ONLY
+$increment = 100; // Daily = 100% for the day
 
 // Calculate new progress based on habit type and action
 $new_progress = $current_progress;
@@ -41,26 +44,22 @@ $new_progress = $current_progress;
 if ($habit_type === 'Bad') {
     // Bad habit logic - Binary for daily
     if ($action === 'decrement') {
-        // Failed to resist - reset to 0%
+        // Failed to resist - reset to 0
         $new_progress = 0;
     } else {
         // Resisted successfully - set to 100%
         $new_progress = 100;
     }
 } else {
-    // Good habit logic - Time-based (hours out of 24)
-    // Convert minutes to hours
-    $hours_completed = $duration / 60;
-    
-    // Calculate percentage: (hours completed / 24 hours) * 100
-    $increment_percentage = ($hours_completed / 24) * 100;
-    
-    // Add to current progress (max 100%)
-    $new_progress = min(100, $current_progress + $increment_percentage);
+    // Good habit logic - Incremental Pomodoro sessions
+    // 30 Pomodoro sessions to reach 100%
+    $good_increment = 100 / 30; // ~3.33% per session
+    $new_progress = min(100, $current_progress + $good_increment);
     
     // Log Pomodoro session (only for Good habits)
     $start_time = date('Y-m-d H:i:s');
-    $end_time = date('Y-m-d H:i:s', strtotime("+{$duration} minutes"));
+    $end_time = date('Y-m-d H:i:s', strtotime('+25 minutes'));
+    $duration = 25;
 
     $stmt2 = $conn->prepare("
       INSERT INTO pomodoro_sessions (hobby_id, hobby_name, session_start, session_end, duration_minutes)
@@ -81,10 +80,10 @@ $stmt3->bind_param("dii", $new_progress, $id, $user_id);
 $stmt3->execute();
 
 if ($stmt3->affected_rows > 0 || $new_progress == $current_progress) {
-  // Calculate total hours completed (for good habits)
-  $total_hours = 0;
+  // Calculate sessions completed (for good habits)
+  $sessions_completed = 0;
   if ($habit_type === 'Good') {
-    $total_hours = round(($new_progress / 100) * 24, 2);
+    $sessions_completed = round(($new_progress / 100) * 30);
   }
   
   echo json_encode([
@@ -94,9 +93,7 @@ if ($stmt3->affected_rows > 0 || $new_progress == $current_progress) {
     "old_progress" => round($current_progress, 2),
     "action" => $action,
     "habit_type" => $habit_type,
-    "duration_minutes" => $duration,
-    "hours_added" => round($duration / 60, 2),
-    "total_hours" => $total_hours
+    "sessions_completed" => $sessions_completed
   ]);
 } else {
   echo json_encode(["status" => "error", "message" => "Failed to update progress"]);

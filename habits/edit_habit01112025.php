@@ -18,8 +18,7 @@ if ($id == '') {
   exit;
 }
 
-// Fetch habit (no frequency column)
-$stmt = $conn->prepare("SELECT id, habit_name, type, notes, progress, created_at FROM habits WHERE id=? AND user_id=?");
+$stmt = $conn->prepare("SELECT id, habit_name, frequency, type, notes, progress, created_at FROM habits WHERE id=? AND user_id=?");
 $stmt->bind_param("ii", $id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();

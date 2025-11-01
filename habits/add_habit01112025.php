@@ -14,6 +14,7 @@ $user_id = $user['id'];
 // Sanitize and validate inputs
 $habit_id = isset($_POST['id']) ? trim($_POST['id']) : '';
 $habit_name = isset($_POST['habit_name']) ? trim($_POST['habit_name']) : '';
+$frequency = isset($_POST['frequency']) ? trim($_POST['frequency']) : '';
 $type = isset($_POST['type']) ? trim($_POST['type']) : '';
 $notes = isset($_POST['notes']) ? trim($_POST['notes']) : '';
 
@@ -23,8 +24,20 @@ if (empty($habit_name)) {
   exit;
 }
 
+if (empty($frequency)) {
+  echo "⚠️ Frequency is required!";
+  exit;
+}
+
 if (empty($type)) {
   echo "⚠️ Type is required!";
+  exit;
+}
+
+// Validate frequency values
+$valid_frequencies = ['Daily', 'Weekly', 'Monthly'];
+if (!in_array($frequency, $valid_frequencies)) {
+  echo "⚠️ Invalid frequency selected!";
   exit;
 }
 
@@ -43,12 +56,12 @@ if (strlen($habit_name) > 100) {
 
 try {
   if (empty($habit_id)) {
-    // Insert new habit (no frequency column)
-    $stmt = $conn->prepare("INSERT INTO habits (user_id, habit_name, type, notes, progress, created_at) VALUES (?, ?, ?, ?, 0, NOW())");
-    $stmt->bind_param("isss", $user_id, $habit_name, $type, $notes);
+    // Insert new habit
+    $stmt = $conn->prepare("INSERT INTO habits (user_id, habit_name, frequency, type, notes, progress, created_at) VALUES (?, ?, ?, ?, ?, 0, NOW())");
+    $stmt->bind_param("issss", $user_id, $habit_name, $frequency, $type, $notes);
 
     if ($stmt->execute()) {
-      echo "✅ Daily habit added successfully!";
+      echo "✅ Habit added successfully!";
     } else {
       echo "❌ Error adding habit: " . $stmt->error;
     }
@@ -68,9 +81,9 @@ try {
     }
     $check_stmt->close();
 
-    // Update habit (no frequency column)
-    $stmt = $conn->prepare("UPDATE habits SET habit_name=?, type=?, notes=? WHERE id=? AND user_id=?");
-    $stmt->bind_param("sssii", $habit_name, $type, $notes, $habit_id, $user_id);
+    // Update habit
+    $stmt = $conn->prepare("UPDATE habits SET habit_name=?, frequency=?, type=?, notes=? WHERE id=? AND user_id=?");
+    $stmt->bind_param("sssiii", $habit_name, $frequency, $type, $notes, $habit_id, $user_id);
 
     if ($stmt->execute()) {
       if ($stmt->affected_rows > 0) {
